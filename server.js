@@ -1,9 +1,4 @@
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "EduReports API is running"
-  });
-});
+
 require("dotenv").config();
 
 const express = require("express");
