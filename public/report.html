@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Report</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+<button onclick="toggleDarkMode()">
+</button>
+
+<script>
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+</script>
+<body class="bg-gray-100">
+
+<!-- AUTH -->
+<script>
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
+</script>
+
+<div class="flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <div class="w-64 bg-white shadow-lg p-5">
+
+    <h2 class="text-2xl font-bold mb-6 text-blue-600">
+      EduReports
+    </h2>
+
+    <nav class="space-y-3">
+
+      <a href="students.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Students
+      </a>
+
+      <a href="subjects.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Subjects
+      </a>
+
+      <a href="scores.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Scores
+      </a>
+
+      <a href="report.html"
+         class="block p-2 rounded bg-blue-100">
+         Reports
+      </a>
+
+      <a href="rankings.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Rankings
+      </a>
+
+      <a href="verify.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Verify
+      </a>
+
+      <a href="school.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         School
+      </a>
+
+    </nav>
+
+    <button
+      onclick="logout()"
+      class="mt-10 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+    >
+      Logout
+    </button>
+
+  </div>
+
+  <!-- MAIN -->
+  <div class="flex-1 p-6 overflow-auto">
+
+    <h1 class="text-3xl font-bold mb-6">
+      Student Report
+    </h1>
+
+    <!-- CONTROLS -->
+    <div class="bg-white p-4 rounded shadow mb-6 flex gap-3 flex-wrap">
+
+      <select
+        id="student"
+        class="border p-2 rounded"
+      >
+        <option value="">Select Student</option>
+      </select>
+
+      <select
+        id="term"
+        class="border p-2 rounded"
+      >
+        <option value="First">First Term</option>
+        <option value="Second">Second Term</option>
+        <option value="Third">Third Term</option>
+      </select>
+
+      <button
+        onclick="loadReport()"
+        class="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Load Report
+      </button>
+
+      <button
+        onclick="downloadPDF()"
+        class="bg-green-500 text-white px-4 py-2 rounded"
+      >
+        Download PDF
+      </button>
+
+    </div>
+
+    <!-- REPORT CARD -->
+    <div
+      id="reportCard"
+      class="bg-white p-8 rounded shadow relative"
+    >
+
+      <!-- WATERMARK -->
+      <div class="absolute inset-0 flex items-center justify-center opacity-10 text-6xl font-bold pointer-events-none">
+        OFFICIAL RESULT
+      </div>
+
+      <!-- HEADER -->
+      <div class="flex justify-between items-center">
+
+        <!-- SCHOOL LOGO -->
+        <img
+          id="logo"
+          class="h-20 w-20 object-cover rounded"
+        >
+
+        <!-- SCHOOL DETAILS -->
+        <div class="text-center max-w-xl">
+
+          <h2
+            id="schoolName"
+            class="text-3xl font-bold text-blue-700"
+          >
+            School Name
+          </h2>
+
+          <p
+            id="schoolAddress"
+            class="text-sm text-gray-600 leading-6 mt-2"
+          >
+            Address | Phone | Email
+          </p>
+
+        </div>
+
+        <!-- STUDENT PHOTO -->
+        <img
+          id="photo"
+          class="h-20 w-20 rounded-full object-cover border"
+        >
+
+      </div>
+
+      <hr class="my-4">
+
+      <!-- STUDENT INFO -->
+      <div class="grid grid-cols-2 gap-4">
+
+        <p>
+          <b>Name:</b>
+          <span id="name"></span>
+        </p>
+
+        <p>
+          <b>Class:</b>
+          <span id="class"></span>
+        </p>
+
+        <p>
+          <b>Date of Birth:</b>
+          <span id="dob"></span>
+        </p>
+
+        <p>
+          <b>Term:</b>
+          <span id="termDisplay"></span>
+        </p>
+
+      </div>
+
+      <!-- TABLE -->
+      <table class="w-full border mt-6">
+
+        <thead class="bg-gray-200">
+
+          <tr>
+            <th class="border p-2">Subject</th>
+            <th class="border p-2">Test</th>
+            <th class="border p-2">Exam</th>
+            <th class="border p-2">Total</th>
+            <th class="border p-2">Remark</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="scores"></tbody>
+
+      </table>
+
+      <!-- RESULT SUMMARY -->
+      <div class="mt-6 space-y-2">
+
+        <p>
+          <b>Average:</b>
+          <span id="avg"></span>
+        </p>
+
+        <p>
+          <b>Position:</b>
+          <span id="pos"></span>
+        </p>
+
+      </div>
+
+      <!-- COMMENT -->
+      <div class="mt-6">
+
+        <label class="font-semibold">
+          Teacher Comment
+        </label>
+
+        <textarea
+          id="comment"
+          class="w-full border p-3 rounded mt-2"
+          rows="3"
+        ></textarea>
+
+      </div>
+
+      <!-- QR -->
+      <div class="mt-6">
+
+        <p class="font-semibold mb-2">
+          Verification QR
+        </p>
+
+        <canvas id="qr"></canvas>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+async function checkSubscription() {
+
+  const res = await api(
+    "API_URL/me"
+  );
+
+  const data = await res.json();
+
+  if (!data.active) {
+
+    alert(
+      "Subscription expired or inactive"
+    );
+
+    localStorage.clear();
+
+    window.location.href =
+      "activate.html";
+
+  }
+
+}
+
+checkSubscription();
+/* =========================
+   LOGOUT
+========================= */
+
+function logout() {
+
+  localStorage.clear();
+
+  window.location.href = "login.html";
+
+}
+
+/* =========================
+   LOAD STUDENTS
+========================= */
+
+async function loadStudents() {
+
+  try {
+
+    const res = await api(
+      "API_URL/students"
+    );
+
+    const data = await res.json();
+
+    const select =
+      document.getElementById("student");
+
+    select.innerHTML =
+      `<option value="">Select Student</option>`;
+
+    data.forEach(student => {
+
+      select.innerHTML += `
+        <option value="${student.id}">
+          ${student.name}
+        </option>
+      `;
+
+    });
+
+  } catch(err) {
+
+    console.log(err);
+
+    alert("Could not load students");
+
+  }
+
+}
+
+/* =========================
+   LOAD REPORT
+========================= */
+
+async function loadReport() {
+
+  const studentId =
+    document.getElementById("student").value;
+
+  const term =
+    document.getElementById("term").value;
+
+  if (!studentId) {
+    alert("Please select a student");
+    return;
+  }
+
+  try {
+
+    const res = await api(
+      `API_URL/report/${studentId}?term=${term}`
+    );
+
+    const data = await res.json();
+
+    if (!data.student) {
+
+      alert("No report found");
+
+      return;
+
+    }
+
+    /* STUDENT */
+
+    document.getElementById("name").textContent =
+      data.student.name || "";
+
+    document.getElementById("class").textContent =
+      data.student.class || "";
+
+    document.getElementById("dob").textContent =
+      data.student.dob || "";
+
+    document.getElementById("termDisplay").textContent =
+      term;
+
+    /* SCHOOL */
+
+    document.getElementById("schoolName").textContent =
+      data.school?.name || "School Name";
+
+    document.getElementById("schoolAddress").innerHTML =
+      `
+      ${data.school?.address || ""}
+      <br>
+      ${data.school?.phone || ""}
+      <br>
+      ${data.school?.email || ""}
+      `;
+
+    /* IMAGES */
+
+    if (data.school?.logo) {
+
+      document.getElementById("logo").src =
+        "API_URL" + data.school.logo;
+
+    }
+    else {
+
+      document.getElementById("logo").src = "";
+
+    }
+
+    if (data.student?.photo) {
+
+      document.getElementById("photo").src =
+        "API_URL" + data.student.photo;
+
+    }
+    else {
+
+      document.getElementById("photo").src = "";
+
+    }
+
+    /* SCORES */
+
+    const tbody =
+      document.getElementById("scores");
+
+    tbody.innerHTML = "";
+
+    data.scores.forEach(score => {
+
+      let remark = "Fail";
+
+      if (score.total >= 75) {
+        remark = "Excellent";
+      }
+      else if (score.total >= 60) {
+        remark = "Very Good";
+      }
+      else if (score.total >= 50) {
+        remark = "Good";
+      }
+      else if (score.total >= 40) {
+        remark = "Pass";
+      }
+
+      tbody.innerHTML += `
+        <tr>
+
+          <td class="border p-2">
+            ${score.subject}
+          </td>
+
+          <td class="border p-2">
+            ${score.test_score}
+          </td>
+
+          <td class="border p-2">
+            ${score.exam_score}
+          </td>
+
+          <td class="border p-2 font-bold">
+            ${score.total}
+          </td>
+
+          <td class="border p-2">
+            ${remark}
+          </td>
+
+        </tr>
+      `;
+
+    });
+
+    /* SUMMARY */
+
+    document.getElementById("avg").textContent =
+      Number(data.average).toFixed(2);
+
+    document.getElementById("pos").textContent =
+      data.position || "-";
+
+    /* QR */
+
+    const qrCanvas =
+      document.getElementById("qr");
+
+    QRCode.toCanvas(
+      qrCanvas,
+      `API_URL/verify/${data.verification_code}`
+    );
+
+  } catch(err) {
+
+    console.log(err);
+
+    alert("Could not load report");
+
+  }
+
+}
+
+/* =========================
+   PDF
+========================= */
+
+function downloadPDF() {
+
+  html2pdf()
+    .from(document.getElementById("reportCard"))
+    .save("report.pdf");
+
+}
+
+/* =========================
+   INIT
+========================= */
+
+loadStudents();
+
+</script>
+
+</body>
+</html>

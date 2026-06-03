@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>School Settings</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+<button onclick="toggleDarkMode()">
+</button>
+
+<script>
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+</script>
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+  <!-- SIDEBAR -->
+  <div class="w-64 bg-white shadow-lg p-5">
+
+    <h2 class="text-2xl font-bold mb-6 text-blue-600">
+      EduReports
+    </h2>
+
+    <nav class="space-y-3">
+
+      <a href="students.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Students
+      </a>
+
+      <a href="subjects.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Subjects
+      </a>
+
+      <a href="scores.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Scores
+      </a>
+
+      <a href="report.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Reports
+      </a>
+
+      <a href="rankings.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Rankings
+      </a>
+
+      <a href="verify.html"
+         class="block p-2 rounded hover:bg-blue-100">
+         Verify
+      </a>
+
+      <a href="school.html"
+         class="block p-2 rounded bg-blue-100">
+         School
+      </a>
+
+    </nav>
+
+    <button
+      onclick="logout()"
+      class="mt-10 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+    >
+      Logout
+    </button>
+
+  </div>
+
+  <!-- MAIN -->
+  <div class="flex-1 p-6 overflow-auto">
+
+    <h1 class="text-3xl font-bold mb-6">
+      School Settings
+    </h1>
+
+    <div class="bg-white p-6 rounded shadow space-y-4 max-w-2xl">
+
+      <!-- SCHOOL NAME -->
+      <div>
+        <label class="block mb-1 font-semibold">
+          School Name
+        </label>
+
+        <input
+          id="name"
+          type="text"
+          placeholder="Enter school name"
+          class="border p-3 rounded w-full"
+        >
+      </div>
+
+      <!-- ADDRESS -->
+      <div>
+        <label class="block mb-1 font-semibold">
+          Address
+        </label>
+
+        <input
+          id="address"
+          type="text"
+          placeholder="Enter school address"
+          class="border p-3 rounded w-full"
+        >
+      </div>
+
+      <!-- PHONE -->
+      <div>
+        <label class="block mb-1 font-semibold">
+          Phone
+        </label>
+
+        <input
+          id="phone"
+          type="text"
+          placeholder="Enter phone number"
+          class="border p-3 rounded w-full"
+        >
+      </div>
+
+      <!-- EMAIL -->
+      <div>
+        <label class="block mb-1 font-semibold">
+          Email
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          placeholder="Enter school email"
+          class="border p-3 rounded w-full"
+        >
+      </div>
+
+      <!-- LOGO -->
+      <div>
+
+        <label class="block mb-1 font-semibold">
+          School Logo
+        </label>
+
+        <input
+          type="file"
+          id="logoFile"
+          class="border p-3 rounded w-full"
+        >
+
+        <img
+          id="logoPreview"
+          class="h-24 mt-4 hidden border rounded"
+        >
+
+      </div>
+
+      <!-- SAVE BUTTON -->
+      <button
+        onclick="saveSchool()"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded"
+      >
+        Save School Info
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+async function checkSubscription() {
+
+  const res = await api(
+    "API_URL/me"
+  );
+
+  const data = await res.json();
+
+  if (!data.active) {
+
+    alert(
+      "Subscription expired or inactive"
+    );
+
+    localStorage.clear();
+
+    window.location.href =
+      "activate.html";
+
+  }
+
+}
+
+checkSubscription();
+/* =============================
+   🔐 AUTH CHECK
+============================= */
+
+if (!localStorage.getItem("token")) {
+
+  window.location.href = "login.html";
+
+}
+
+/* =============================
+   📌 ELEMENTS
+============================= */
+
+const schoolNameInput =
+  document.getElementById("name");
+
+const addressInput =
+  document.getElementById("address");
+
+const phoneInput =
+  document.getElementById("phone");
+
+const emailInput =
+  document.getElementById("email");
+
+const logoFileInput =
+  document.getElementById("logoFile");
+
+const logoPreview =
+  document.getElementById("logoPreview");
+
+/* =============================
+   📌 GLOBAL
+============================= */
+
+let existingLogo = "";
+
+/* =============================
+   📥 LOAD SCHOOL
+============================= */
+
+async function loadSchool() {
+
+  try {
+
+    const res = await api(
+      "API_URL+ /school"
+    );
+
+    const data = await res.json();
+
+    console.log("Loaded School:", data);
+
+    if (!data) return;
+
+    schoolNameInput.value =
+      data.name || "";
+
+    addressInput.value =
+      data.address || "";
+
+    phoneInput.value =
+      data.phone || "";
+
+    emailInput.value =
+      data.email || "";
+
+    if (data.logo) {
+
+      existingLogo = data.logo;
+
+      logoPreview.src =
+        "API_URL" + data.logo;
+
+      logoPreview.classList.remove("hidden");
+
+    }
+
+  } catch(err) {
+
+    console.log(err);
+
+    alert("Could not load school info");
+
+  }
+
+}
+
+/* =============================
+   📤 UPLOAD LOGO
+============================= */
+
+async function uploadLogo() {
+
+  const file =
+    logoFileInput.files[0];
+
+  if (!file) {
+
+    return existingLogo;
+
+  }
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "file",
+    file
+  );
+
+  const res = await fetch(
+    "API_URL/upload/logo",
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  const data =
+    await res.json();
+
+  return data.url;
+
+}
+
+/* =============================
+   💾 SAVE SCHOOL
+============================= */
+
+async function saveSchool() {
+
+  try {
+
+    const logo =
+      await uploadLogo();
+
+    const payload = {
+
+      name:
+        schoolNameInput.value.trim(),
+
+      address:
+        addressInput.value.trim(),
+
+      phone:
+        phoneInput.value.trim(),
+
+      email:
+        emailInput.value.trim(),
+
+      logo:
+        logo
+
+    };
+
+    console.log("Sending Payload:", payload);
+
+    const res = await api(
+      "API_URL+/school",
+      {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data =
+      await res.json();
+
+    console.log("Response:", data);
+
+    if (data.success) {
+
+      alert(
+        "✅ School info saved successfully!"
+      );
+
+      loadSchool();
+
+    } else {
+
+      alert(
+        data.error ||
+        "Failed to save school info"
+      );
+
+    }
+
+  } catch(err) {
+
+    console.log(err);
+
+    alert("Error saving school info");
+
+  }
+
+}
+
+/* =============================
+   🚪 LOGOUT
+============================= */
+
+function logout() {
+
+  localStorage.clear();
+
+  window.location.href =
+    "login.html";
+
+}
+
+/* =============================
+   🚀 INIT
+============================= */
+
+loadSchool();
+
+</script>
+
+</body>
+</html> 

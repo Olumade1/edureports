@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>License Generator</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+<button onclick="toggleDarkMode()">
+
+</button>
+
+<script>
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+</script>
+<body class="bg-gray-100 p-10">
+
+  <div class="max-w-2xl mx-auto bg-white p-8 rounded shadow">
+
+    <h1 class="text-3xl font-bold mb-6 text-blue-600">
+      Generate License Codes
+    </h1>
+
+    <button
+      onclick="generateCode()"
+      class="bg-blue-500 text-white px-6 py-3 rounded"
+    >
+      Generate Code
+    </button>
+
+    <div
+      id="result"
+      class="mt-6"
+    ></div>
+
+    <div class="mt-10">
+
+      <h2 class="text-xl font-semibold mb-4">
+        Instructions
+      </h2>
+
+      <ul class="list-disc ml-5 space-y-2 text-gray-700">
+
+        <li>
+          User makes payment
+        </li>
+
+        <li>
+          User sends receipt + username
+        </li>
+
+        <li>
+          Generate a code here
+        </li>
+
+        <li>
+          Send code to the user
+        </li>
+
+      </ul>
+
+    </div>
+
+  </div>
+
+<script>
+
+async function generateCode() {
+
+  const res = await api(
+    "API_URL/generate-license",
+    {
+      method: "POST"
+    }
+  );
+
+  const data = await res.json();
+
+  if (!data.success) {
+
+    alert("Could not generate code");
+
+    return;
+
+  }
+
+  document.getElementById("result").innerHTML = `
+
+    <div class="bg-green-100 border border-green-300 p-5 rounded">
+
+      <p class="font-semibold mb-2">
+        License Generated
+      </p>
+
+      <p class="text-2xl font-bold text-green-700">
+        ${data.code}
+      </p>
+
+    </div>
+
+  `;
+
+}
+
+</script>
+
+</body>
+</html>

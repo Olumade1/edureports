@@ -1,0 +1,256 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6fb;
+  margin: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+select, input, button {
+  padding: 10px;
+  margin: 5px;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  border: 1px solid #eee;
+  padding: 10px;
+}
+
+th {
+  background: #f1f5f9;
+}
+
+.card {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f9fafc;
+  border-radius: 8px;
+}
+.layout {
+  display: flex;
+}
+
+.sidebar {
+  width: 220px;
+  background: #1e293b;
+  color: white;
+  height: 100vh;
+  padding: 20px;
+}
+
+.sidebar h3 {
+  margin-bottom: 20px;
+}
+
+.sidebar a {
+  display: block;
+  color: #cbd5f5;
+  text-decoration: none;
+  margin: 10px 0;
+}
+
+.sidebar a:hover {
+  color: white;
+}
+
+.main {
+  flex: 1;
+}
+
+.topbar {
+  background: white;
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.content {
+  padding: 20px;
+}
+.dark {
+  background: #111;
+  color: white;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background: #222;
+  color: white;
+  border: 1px solid #555;
+}@media(max-width:768px){
+
+  .container{
+    width:95%;
+  }
+
+  table{
+    display:block;
+    overflow-x:auto;
+  }
+
+  input,
+  button,
+  select{
+    width:100%;
+    margin-bottom:10px;
+  }
+
+}
+/* =================================
+   GLOBAL RESPONSIVE FIXES
+================================= */
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* TABLE RESPONSIVE */
+
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* MOBILE */
+
+@media screen and (max-width: 768px) {
+
+  body {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 24px !important;
+  }
+
+  h2 {
+    font-size: 20px !important;
+  }
+
+  h3 {
+    font-size: 18px !important;
+  }
+
+  .container,
+  .card,
+  .box,
+  .panel {
+    width: 100% !important;
+    padding: 15px !important;
+  }
+
+  button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100% !important;
+    font-size: 16px;
+  }
+
+  table {
+    min-width: 700px;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+}
+
+/* DASHBOARD GRID */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+/* DARK MODE */
+
+body.dark {
+  background: #111827;
+  color: white;
+}
+
+body.dark .card,
+body.dark .box,
+body.dark .panel {
+  background: #1f2937;
+  color: white;
+}
+
+body.dark input,
+body.dark textarea,
+body.dark select {
+  background: #374151;
+  color: white;
+  border: 1px solid #555;
+}body {
+  transition: background 0.3s ease;
+}
+
+.dark {
+  background: #111827;
+  color: white;
+}
+
+input,
+select,
+button,
+textarea {
+  max-width: 100%;
+}
+
+img {
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

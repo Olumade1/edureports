@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Verify Result</title>
+  
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- API helper -->
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+<button onclick="toggleDarkMode()">
+
+</button>
+
+<script>
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+</script>
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+  <!-- Sidebar -->
+  <div class="w-64 bg-white shadow-lg p-5">
+    <h2 class="text-2xl font-bold mb-6 text-blue-600">EduReports</h2>
+
+    <nav class="space-y-3">
+      <a href="students.html" class="block p-2 rounded hover:bg-blue-100">Students</a>
+      <a href="subjects.html" class="block p-2 rounded hover:bg-blue-100">Subjects</a>
+      <a href="scores.html" class="block p-2 rounded hover:bg-blue-100">Scores</a>
+      <a href="report.html" class="block p-2 rounded hover:bg-blue-100">Reports</a>
+      <a href="rankings.html" class="block p-2 rounded hover:bg-blue-100">Rankings</a>
+      <a href="verify.html" class="block p-2 rounded bg-blue-100">Verify</a>
+    </nav>
+
+    <button onclick="logout()" 
+      class="mt-10 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
+      Logout
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div class="flex-1 p-6 overflow-auto">
+
+    <h1 class="text-2xl font-bold mb-6">Verify Result</h1>
+
+    <!-- Input Card -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h3 class="text-lg font-semibold mb-3">Enter Verification Code</h3>
+
+      <div class="flex gap-3">
+        <input 
+          type="text" 
+          id="code" 
+          placeholder="e.g. ABC123"
+          class="border p-2 rounded w-1/2"
+        />
+
+        <button onclick="verify()" 
+          class="bg-blue-500 text-white px-4 rounded hover:bg-blue-600">
+          Verify
+        </button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div id="result"></div>
+
+  </div>
+
+</div>
+
+<script>
+async function checkSubscription() {
+
+  const res = await api(
+    "API_URL/me"
+  );
+
+  const data = await res.json();
+
+  if (!data.active) {
+
+    alert(
+      "Subscription expired or inactive"
+    );
+
+    localStorage.clear();
+
+    window.location.href =
+      "activate.html";
+
+  }
+
+}
+
+checkSubscription();
+/* =============================
+   🔐 AUTH + SESSION CHECK
+============================= */
+
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
+
+const loginTime = localStorage.getItem("loginTime");
+
+if (loginTime) {
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+
+  if (now - loginTime > oneHour) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("loginTime");
+
+    alert("Session expired. Please login again.");
+    window.location.href = "login.html";
+  }
+}
+
+/* =============================
+   🔍 VERIFY RESULT
+============================= */
+
+async function verify() {
+  const code = document.getElementById("code").value.trim();
+  const resultDiv = document.getElementById("result");
+
+  if (!code) {
+    resultDiv.innerHTML = "<p class='text-red-500'>Please enter a code</p>";
+    return;
+  }
+
+  const res = await api(`API_URL/verify/${code}`);
+  const data = await res.json();
+
+  if (!data) {
+    resultDiv.innerHTML = `
+      <div class="bg-white p-4 rounded shadow text-red-500">
+        ❌ Invalid verification code
+      </div>
+    `;
+    return;
+  }
+
+  resultDiv.innerHTML = `
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h3 class="text-xl font-bold mb-3">Verified Result</h3>
+
+      <p><strong>Name:</strong> ${data.name}</p>
+      <p><strong>Class:</strong> ${data.class}</p>
+      <p><strong>Average:</strong> ${Number(data.average).toFixed(2)}</p>
+
+      <p class="mt-2">
+        <strong>Grade:</strong>
+        <span class="px-2 py-1 rounded text-white ${
+          data.grade === "A" ? "bg-green-500" :
+          data.grade === "B" ? "bg-blue-500" :
+          data.grade === "C" ? "bg-yellow-500" :
+          data.grade === "D" ? "bg-orange-500" :
+          "bg-red-500"
+        }">
+          ${data.grade}
+        </span>
+      </p>
+    </div>
+  `;
+}
+
+/* =============================
+   🚪 LOGOUT
+============================= */
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("loginTime");
+  window.location.href = "login.html";
+}
+
+</script>
+
+</body>
+</html>

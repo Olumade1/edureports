@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Activate Account</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="bg-white p-8 rounded shadow w-full max-w-md">
+
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-2">
+      EduReports
+    </h1>
+
+    <p class="text-center text-gray-500 mb-6">
+      Activate your subscription
+    </p>
+
+    <div class="bg-yellow-50 border border-yellow-300 p-4 rounded mb-6">
+
+      <p class="font-semibold mb-2">
+        Payment Instructions
+      </p>
+
+      <p>
+        Pay subscription fee #10,000.00 to:
+      </p>
+
+      <div class="mt-3 text-sm space-y-1">
+
+        <p>
+          <b>Bank:</b> Opay
+        </p>
+
+        <p>
+          <b>Account Name:</b> educonnect solutions
+        </p>
+
+        <p>
+          <b>Account Number:</b> 8154045941
+        </p>
+
+      </div>
+
+      <p class="mt-4 text-sm">
+        After payment, send:
+      </p>
+
+      <ul class="list-disc ml-5 text-sm mt-2">
+        <li>Payment receipt</li>
+        <li>Your Username</li>
+      </ul>
+
+      <p class="mt-2 text-sm">
+        to our email: educonnect39@gmail.com or WhatsApp: +2349063508971
+      </p>
+
+    </div>
+
+    <input
+      id="code"
+      placeholder="Enter activation code"
+      class="border w-full p-3 rounded mb-4"
+    >
+
+    <button
+      onclick="activate()"
+      class="bg-blue-500 hover:bg-blue-600 text-white w-full py-3 rounded"
+    >
+      Activate Account
+    </button>
+
+    <p
+      id="msg"
+      class="text-center mt-4 text-sm"
+    ></p>
+
+  </div>
+
+<script>
+
+async function activate() {
+
+  const code =
+    document.getElementById("code").value;
+
+  const msg =
+    document.getElementById("msg");
+
+  try {
+
+    const res = await api(
+      "API_URL/activate",
+      {
+        method: "POST",
+        body: JSON.stringify({ code })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data.success) {
+
+      msg.innerHTML = `
+        <span class="text-red-500">
+          ${data.message}
+        </span>
+      `;
+
+      return;
+
+    }
+
+    msg.innerHTML = `
+      <span class="text-green-600">
+        Activation successful!
+      </span>
+    `;
+
+    setTimeout(() => {
+
+      window.location.href =
+        "students.html";
+
+    }, 1500);
+
+  } catch(err) {
+
+    msg.innerHTML = `
+      <span class="text-red-500">
+        Activation failed
+      </span>
+    `;
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>

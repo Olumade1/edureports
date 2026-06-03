@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Subjects</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 dark:text-white">
+
+<div class="flex flex-col md:flex-row min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="w-full md:w-64 bg-white dark:bg-gray-800 shadow-lg p-5">
+
+    <div class="flex items-center justify-between md:block">
+
+      <h2 class="text-2xl font-bold mb-6 text-blue-600">
+        EduReports
+      </h2>
+
+      <button
+        onclick="toggleDarkMode()"
+        class="bg-black text-white px-3 py-2 rounded text-sm"
+      >
+        🌙
+      </button>
+
+    </div>
+
+    <nav class="space-y-3">
+
+      <a
+        href="students.html"
+        class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700"
+      >
+        Students
+      </a>
+
+      <a
+        href="subjects.html"
+        class="block p-2 rounded bg-blue-100 dark:bg-blue-900"
+      >
+        Subjects
+      </a>
+
+      <a
+        href="scores.html"
+        class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700"
+      >
+        Scores
+      </a>
+
+      <a
+        href="report.html"
+        class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700"
+      >
+        Reports
+      </a>
+
+      <a
+        href="rankings.html"
+        class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700"
+      >
+        Rankings
+      </a>
+
+      <a
+        href="verify.html"
+        class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700"
+      >
+        Verify
+      </a>
+
+    </nav>
+
+    <button
+      onclick="logout()"
+      class="mt-10 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+    >
+      Logout
+    </button>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 p-4 md:p-6 overflow-auto">
+
+    <h1 class="text-2xl font-bold mb-6">
+      Subjects
+    </h1>
+
+    <!-- ADD SUBJECT -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6">
+
+      <h3 class="text-lg font-semibold mb-3">
+        Add Subject
+      </h3>
+
+      <form
+        id="form"
+        class="flex flex-col md:flex-row gap-3"
+      >
+
+        <input
+          type="text"
+          id="name"
+          placeholder="Subject Name"
+          class="border p-2 rounded w-full dark:bg-gray-700"
+          required
+        />
+
+        <button
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Add
+        </button>
+
+      </form>
+
+    </div>
+
+    <!-- SUBJECT LIST -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+
+      <h3 class="text-lg font-semibold mb-3">
+        Subjects
+      </h3>
+
+      <ul
+        id="list"
+        class="space-y-2"
+      ></ul>
+
+    </div>
+
+  </main>
+
+</div>
+
+<script>
+
+/* DARK MODE */
+
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+}
+
+if (
+  localStorage.getItem("darkMode")
+  === "true"
+) {
+  document.body.classList.add("dark");
+}
+
+/* AUTH */
+
+if (!localStorage.getItem("token")) {
+
+  window.location.href = "login.html";
+}
+
+/* VARIABLES */
+
+const form =
+  document.getElementById("form");
+
+const list =
+  document.getElementById("list");
+
+/* LOAD SUBJECTS */
+
+async function loadSubjects() {
+
+  try {
+
+    const res = await api(
+      "API_URL/subjects"
+    );
+
+    const data = await res.json();
+
+    list.innerHTML = "";
+
+    if (!Array.isArray(data)) {
+
+      list.innerHTML = `
+        <li class="text-red-500">
+          Failed to load subjects
+        </li>
+      `;
+
+      return;
+    }
+
+    if (data.length === 0) {
+
+      list.innerHTML = `
+        <li class="text-gray-500">
+          No subjects added
+        </li>
+      `;
+
+      return;
+    }
+
+    data.forEach(s => {
+
+      list.innerHTML += `
+
+        <li class="border dark:border-gray-700 p-3 rounded bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
+
+          <span>
+            ${s.name}
+          </span>
+
+          <button
+            onclick="deleteSubject(${s.id})"
+            class="bg-red-500 text-white px-3 py-1 rounded text-sm"
+          >
+            Delete
+          </button>
+
+        </li>
+
+      `;
+    });
+
+  } catch(err) {
+
+    console.log(err);
+
+    list.innerHTML = `
+      <li class="text-red-500">
+        Cannot connect to server
+      </li>
+    `;
+  }
+}
+
+/* ADD SUBJECT */
+
+form.addEventListener(
+  "submit",
+  async (e) => {
+
+    e.preventDefault();
+
+    const name =
+      document.getElementById("name").value;
+
+    await api(
+      "API_URL/subjects",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          name
+        })
+      }
+    );
+
+    form.reset();
+
+    loadSubjects();
+  }
+);
+
+/* DELETE SUBJECT */
+
+async function deleteSubject(id) {
+
+  if (!confirm("Delete subject?"))
+    return;
+
+  await api(
+    `API_URL/subjects/${id}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  loadSubjects();
+}
+
+/* LOGOUT */
+
+function logout() {
+
+  localStorage.clear();
+
+  window.location.href =
+    "login.html";
+}
+
+/* INIT */
+
+loadSubjects();
+
+</script>
+
+</body>
+</html>

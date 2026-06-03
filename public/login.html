@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Login</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+<button onclick="toggleDarkMode()">
+</button>
+
+<script>
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+</script>
+<body class="bg-blue-100 flex items-center justify-center h-screen">
+
+<div class="bg-white p-8 rounded-lg shadow-lg w-96">
+
+  <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">
+    EduReports Login
+  </h1>
+
+  <form id="loginForm" class="space-y-4">
+
+    <input
+      type="text"
+      id="username"
+      placeholder="Username"
+      class="w-full border p-3 rounded"
+      required
+    >
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      class="w-full border p-3 rounded"
+      required
+    >
+
+    <button
+      type="submit"
+      class="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
+    >
+      Login
+    </button>
+
+  </form>
+
+  <p class="text-center mt-5">
+    Don't have an account?
+
+    <a
+      href="signup.html"
+      class="text-blue-600 font-semibold"
+    >
+      Sign Up
+    </a>
+  </p>
+
+  <p
+    id="msg"
+    class="text-center mt-4 text-red-500"
+  ></p>
+
+</div>
+
+<script>
+
+/* =========================
+   LOGIN
+========================= */
+
+const form =
+  document.getElementById("loginForm");
+
+form.addEventListener(
+  "submit",
+  async (e) => {
+
+    e.preventDefault();
+
+    const username =
+      document.getElementById("username").value;
+
+    const password =
+      document.getElementById("password").value;
+
+    try {
+
+      const res = await fetch(
+        `${API_URL}/login`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            username,
+            password
+          })
+        }
+      );
+
+      const data = await res.json();
+
+      /* LOGIN FAILED */
+
+      if (!data.success) {
+
+        document.getElementById("msg")
+          .innerText =
+          data.message || "Login failed";
+
+        return;
+
+      }
+
+      /* SAVE TOKEN */
+
+      localStorage.setItem(
+        "token",
+        data.token
+      );
+
+      /* NOT ACTIVATED */
+
+      if (
+        data.active !== 1
+      ) {
+
+        window.location.href =
+          "activate.html";
+
+        return;
+
+      }
+
+      /* CHECK EXPIRY */
+
+      if (
+        data.expires
+      ) {
+
+        const expiry =
+          new Date(data.expires);
+
+        const now =
+          new Date();
+
+        if (now > expiry) {
+
+          localStorage.clear();
+
+          alert(
+            "Subscription expired"
+          );
+
+          window.location.href =
+            "activate.html";
+
+          return;
+
+        }
+
+      }
+
+      /* ACCESS GRANTED */
+
+      window.location.href =
+        "students.html";
+
+    }
+
+    catch (err) {
+
+      console.log(err);
+
+      document.getElementById("msg")
+        .innerText =
+        "Cannot connect to server";
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>

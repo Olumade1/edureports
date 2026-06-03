@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Rankings</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- API helper -->
+   <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+<button onclick="toggleDarkMode()">
+</button>
+
+<script>
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+</script>
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+  <!-- Sidebar -->
+  <div class="w-64 bg-white shadow-lg p-5">
+    <h2 class="text-2xl font-bold mb-6 text-blue-600">EduReports</h2>
+
+    <nav class="space-y-3">
+      <a href="students.html" class="block p-2 rounded hover:bg-blue-100">Students</a>
+      <a href="subjects.html" class="block p-2 rounded hover:bg-blue-100">Subjects</a>
+      <a href="scores.html" class="block p-2 rounded hover:bg-blue-100">Scores</a>
+      <a href="report.html" class="block p-2 rounded hover:bg-blue-100">Reports</a>
+      <a href="rankings.html" class="block p-2 rounded bg-blue-100">Rankings</a>
+      <a href="verify.html" class="block p-2 rounded hover:bg-blue-100">Verify</a>
+    </nav>
+
+    <button onclick="logout()" 
+      class="mt-10 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
+      Logout
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div class="flex-1 p-6 overflow-auto">
+
+    <h1 class="text-2xl font-bold mb-6">Student Rankings</h1>
+
+    <!-- Rankings Table -->
+    <div class="bg-white p-6 rounded-lg shadow">
+
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-200 text-left">
+            <th class="p-3">Rank</th>
+            <th class="p-3">Name</th>
+            <th class="p-3">Class</th>
+            <th class="p-3">Average</th>
+          </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+async function checkSubscription() {
+
+  const res = await api(
+    "API_URL/me"
+  );
+
+  const data = await res.json();
+
+  if (!data.active) {
+
+    alert(
+      "Subscription expired or inactive"
+    );
+
+    localStorage.clear();
+
+    window.location.href =
+      "activate.html";
+
+  }
+
+}
+
+checkSubscription();
+/* =============================
+   🔐 AUTH + SESSION CHECK
+============================= */
+
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
+
+const loginTime = localStorage.getItem("loginTime");
+
+if (loginTime) {
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+
+  if (now - loginTime > oneHour) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("loginTime");
+
+    alert("Session expired. Please login again.");
+    window.location.href = "login.html";
+  }
+}
+
+/* =============================
+   📊 LOAD RANKINGS
+============================= */
+
+async function loadRankings() {
+  const res = await api("API_URL+/rankings");
+  const data = await res.json();
+
+  let html = "";
+
+  data.forEach((s, i) => {
+    html += `
+      <tr class="border-b hover:bg-gray-50">
+        <td class="p-3 font-bold">${i + 1}</td>
+        <td class="p-3">${s.name}</td>
+        <td class="p-3">${s.class}</td>
+        <td class="p-3 font-semibold">${Number(s.average).toFixed(2)}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("tableBody").innerHTML = html;
+}
+
+/* =============================
+   🚪 LOGOUT
+============================= */
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("loginTime");
+  window.location.href = "login.html";
+}
+
+/* =============================
+   🚀 INIT
+============================= */
+
+loadRankings();
+
+</script>
+
+</body>
+</html>

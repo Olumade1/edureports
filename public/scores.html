@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Scores</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 dark:text-white">
+
+<div class="flex flex-col md:flex-row min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="w-full md:w-64 bg-white dark:bg-gray-800 shadow-lg p-5">
+
+    <div class="flex items-center justify-between md:block">
+
+      <h2 class="text-2xl font-bold text-blue-600 mb-4">
+        EduReports
+      </h2>
+
+      <button
+        onclick="toggleDarkMode()"
+        class="bg-black text-white px-3 py-2 rounded text-sm"
+      >
+        🌙
+      </button>
+
+    </div>
+
+    <nav class="space-y-2">
+
+      <a href="students.html"
+         class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700">
+         Students
+      </a>
+
+      <a href="subjects.html"
+         class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700">
+         Subjects
+      </a>
+
+      <a href="scores.html"
+         class="block p-2 rounded bg-blue-100 dark:bg-blue-900">
+         Scores
+      </a>
+
+      <a href="report.html"
+         class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700">
+         Reports
+      </a>
+
+      <a href="rankings.html"
+         class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700">
+         Rankings
+      </a>
+
+      <a href="verify.html"
+         class="block p-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700">
+         Verify
+      </a>
+
+    </nav>
+
+    <button
+      onclick="logout()"
+      class="mt-6 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+    >
+      Logout
+    </button>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 p-4 md:p-6 overflow-auto">
+
+    <h1 class="text-2xl font-bold mb-6">
+      Scores
+    </h1>
+
+    <!-- FORM -->
+    <div class="bg-white dark:bg-gray-800 p-4 md:p-6 rounded shadow">
+
+      <h3 class="text-lg font-semibold mb-4">
+        Add Score
+      </h3>
+
+      <form id="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <select
+          id="student"
+          class="border p-2 rounded dark:bg-gray-700"
+        ></select>
+
+        <select
+          id="subject"
+          class="border p-2 rounded dark:bg-gray-700"
+        ></select>
+
+        <input
+          type="number"
+          id="test"
+          placeholder="Test Score"
+          class="border p-2 rounded dark:bg-gray-700"
+        />
+
+        <input
+          type="number"
+          id="exam"
+          placeholder="Exam Score"
+          class="border p-2 rounded dark:bg-gray-700"
+        />
+
+        <select
+          id="term"
+          class="border p-2 rounded md:col-span-2 dark:bg-gray-700"
+        >
+          <option value="First">First Term</option>
+          <option value="Second">Second Term</option>
+          <option value="Third">Third Term</option>
+        </select>
+
+        <button
+          type="submit"
+          class="md:col-span-2 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+        >
+          Save Score
+        </button>
+
+      </form>
+
+    </div>
+
+    <div
+      id="message"
+      class="mt-4 text-green-600 font-semibold"
+    ></div>
+
+  </main>
+
+</div>
+
+<script>
+
+/* DARK MODE */
+
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+
+/* AUTH */
+
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
+
+/* VARIABLES */
+
+const form = document.getElementById("form");
+const studentSelect = document.getElementById("student");
+const subjectSelect = document.getElementById("subject");
+const messageDiv = document.getElementById("message");
+
+/* LOAD STUDENTS */
+
+async function loadStudents() {
+
+  const res = await api(
+    "API_URL+/students"
+  );
+
+  const data = await res.json();
+
+  studentSelect.innerHTML = "";
+
+  data.forEach(s => {
+
+    studentSelect.innerHTML += `
+      <option value="${s.id}">
+        ${s.name}
+      </option>
+    `;
+  });
+}
+
+/* LOAD SUBJECTS */
+
+async function loadSubjects() {
+
+  const res = await api(
+    "API_URL+/subjects"
+  );
+
+  const data = await res.json();
+
+  subjectSelect.innerHTML = "";
+
+  data.forEach(s => {
+
+    subjectSelect.innerHTML += `
+      <option value="${s.id}">
+        ${s.name}
+      </option>
+    `;
+  });
+}
+
+/* SAVE SCORE */
+
+form.addEventListener("submit", async (e) => {
+
+  e.preventDefault();
+
+  const payload = {
+
+    student_id: studentSelect.value,
+
+    subject_id: subjectSelect.value,
+
+    test_score:
+      Number(document.getElementById("test").value),
+
+    exam_score:
+      Number(document.getElementById("exam").value),
+
+    term:
+      document.getElementById("term").value
+  };
+
+  await api(
+    "API_URL+ /scores",
+    {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }
+  );
+
+  messageDiv.textContent =
+    "✅ Score saved successfully";
+
+  form.reset();
+});
+
+/* LOGOUT */
+
+function logout() {
+
+  localStorage.clear();
+
+  window.location.href = "login.html";
+}
+
+/* INIT */
+
+loadStudents();
+loadSubjects();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "edureports",
+  "version": "1.0.0",
+  "description": "EduReports School Management System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "school",
+    "report-card",
+    "education",
+    "edureports"
+  ],
+  "author": "Solomon Olumade",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.16.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "path": "^0.12.7",
+    "paystack": "^2.0.1",
+    "pdfkit": "^0.18.0",
+    "sqlite3": "^5.1.7"
+  }
+}

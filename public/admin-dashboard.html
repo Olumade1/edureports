@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Super Admin Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+</head>
+<button onclick="toggleDarkMode()">
+
+</button>
+
+<script>
+function toggleDarkMode() {
+
+  document.body.classList.toggle("dark");
+
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
+
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+}
+</script>
+<body class="bg-gray-100">
+
+<div class="flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <div class="w-64 bg-white shadow-lg p-5">
+
+    <h2 class="text-2xl font-bold text-blue-600 mb-6">
+      Super Admin
+    </h2>
+
+    <button
+      onclick="generateCode()"
+      class="w-full bg-green-600 text-white py-2 rounded mb-3 hover:bg-green-700"
+    >
+      Generate License Code
+    </button>
+
+    <button
+      onclick="logout()"
+      class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+    >
+      Logout
+    </button>
+
+  </div>
+
+  <!-- MAIN -->
+  <div class="flex-1 p-6">
+
+    <h1 class="text-3xl font-bold mb-6">
+      Admin Dashboard
+    </h1>
+
+    <!-- GENERATED CODE -->
+    <div class="bg-white p-5 rounded shadow mb-6">
+
+      <h3 class="font-bold text-lg mb-3">
+        Generated License Code
+      </h3>
+
+      <div
+        id="generatedCode"
+        class="text-2xl font-bold text-green-700"
+      >
+        No code generated yet
+      </div>
+
+    </div>
+
+    <!-- STATS -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+
+      <div class="bg-white p-5 rounded shadow">
+        <p class="text-gray-500">Total Users</p>
+        <h2 id="totalUsers" class="text-3xl font-bold">
+          0
+        </h2>
+      </div>
+
+      <div class="bg-white p-5 rounded shadow">
+        <p class="text-gray-500">Active Users</p>
+        <h2 id="activeUsers" class="text-3xl font-bold text-green-600">
+          0
+        </h2>
+      </div>
+
+      <div class="bg-white p-5 rounded shadow">
+        <p class="text-gray-500">Inactive Users</p>
+        <h2 id="inactiveUsers" class="text-3xl font-bold text-red-600">
+          0
+        </h2>
+      </div>
+
+      <div class="bg-white p-5 rounded shadow">
+        <p class="text-gray-500">Expired Users</p>
+        <h2 id="expiredUsers" class="text-3xl font-bold text-orange-500">
+          0
+        </h2>
+      </div>
+
+    </div>
+
+    <!-- SEARCH -->
+    <div class="bg-white p-4 rounded shadow mb-6">
+
+      <input
+        type="text"
+        id="search"
+        placeholder="Search username..."
+        class="border p-2 rounded w-full"
+        onkeyup="filterUsers()"
+      >
+
+    </div>
+
+    <!-- USERS TABLE -->
+    <div class="bg-white p-5 rounded shadow overflow-auto">
+
+      <h3 class="text-xl font-bold mb-4">
+        All Users
+      </h3>
+
+      <table class="w-full border">
+
+        <thead class="bg-gray-200">
+
+          <tr>
+            <th class="border p-2">ID</th>
+            <th class="border p-2">Username</th>
+            <th class="border p-2">Status</th>
+            <th class="border p-2">Expiry</th>
+            <th class="border p-2">Actions</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="usersTable"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+/* =========================
+   AUTH
+========================= */
+
+const adminToken =
+  localStorage.getItem("adminToken");
+
+if (!adminToken) {
+
+  window.location.href =
+    "admin-login.html";
+
+}
+
+/* =========================
+   LOAD USERS
+========================= */
+
+let allUsers = [];
+
+async function loadUsers() {
+
+  try {
+
+    const res = await fetch(
+      API_URL + "/users",
+      {
+        headers: {
+          Authorization:
+            "Bearer " + adminToken
+        }
+      }
+    );
+
+    const users = await res.json();
+
+    allUsers = users;
+
+    renderUsers(users);
+
+    updateStats(users);
+
+  } catch(err) {
+
+    console.log(err);
+
+    alert("Cannot load users");
+
+  }
+
+}
+
+/* =========================
+   RENDER USERS
+========================= */
+
+function renderUsers(users) {
+
+  const table =
+    document.getElementById("usersTable");
+
+  table.innerHTML = "";
+
+  users.forEach(user => {
+
+    const expired =
+      user.subscription_expires &&
+      new Date(user.subscription_expires)
+      < new Date();
+
+    table.innerHTML += `
+
+      <tr>
+
+        <td class="border p-2">
+          ${user.id}
+        </td>
+
+        <td class="border p-2">
+          ${user.username}
+        </td>
+
+        <td class="border p-2">
+
+          ${
+            user.active
+            ? '<span class="text-green-600 font-bold">Active</span>'
+            : '<span class="text-red-600 font-bold">Inactive</span>'
+          }
+
+        </td>
+
+        <td class="border p-2">
+
+          ${
+            user.subscription_expires
+            ? new Date(user.subscription_expires)
+              .toLocaleDateString()
+            : "-"
+          }
+
+          ${
+            expired
+            ? '<span class="text-red-500 ml-2">(Expired)</span>'
+            : ''
+          }
+
+        </td>
+
+        <td class="border p-2 space-x-2">
+
+          <button
+            onclick="deactivateUser(${user.id})"
+            class="bg-red-500 text-white px-3 py-1 rounded"
+          >
+            Suspend
+          </button>
+
+          <button
+            onclick="extendUser(${user.id})"
+            class="bg-blue-500 text-white px-3 py-1 rounded"
+          >
+            +90 Days
+          </button>
+
+          <button
+            onclick="deleteUser(${user.id})"
+            class="bg-black text-white px-3 py-1 rounded"
+          >
+            Delete
+          </button>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+/* =========================
+   STATS
+========================= */
+
+function updateStats(users) {
+
+  const total =
+    users.length;
+
+  const active =
+    users.filter(u => u.active).length;
+
+  const inactive =
+    users.filter(u => !u.active).length;
+
+  const expired =
+    users.filter(u => {
+
+      if (!u.subscription_expires)
+        return false;
+
+      return new Date(
+        u.subscription_expires
+      ) < new Date();
+
+    }).length;
+
+  document.getElementById("totalUsers")
+    .textContent = total;
+
+  document.getElementById("activeUsers")
+    .textContent = active;
+
+  document.getElementById("inactiveUsers")
+    .textContent = inactive;
+
+  document.getElementById("expiredUsers")
+    .textContent = expired;
+
+}
+
+/* =========================
+   SEARCH
+========================= */
+
+function filterUsers() {
+
+  const search =
+    document.getElementById("search")
+    .value.toLowerCase();
+
+  const filtered =
+    allUsers.filter(user =>
+      user.username.toLowerCase()
+      .includes(search)
+    );
+
+  renderUsers(filtered);
+
+}
+
+/* =========================
+   GENERATE LICENSE
+========================= */
+
+async function generateCode() {
+
+  const res = await fetch(
+    API_URL + "/generate-license",
+    {
+      method: "POST"
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.success) {
+
+    document.getElementById(
+      "generatedCode"
+    ).textContent = data.code;
+
+  }
+
+}
+
+/* =========================
+   SUSPEND USER
+========================= */
+
+async function deactivateUser(id) {
+
+  if (!confirm("Suspend this user?"))
+    return;
+
+  await fetch(
+    API_URL + "/admin/deactivate/" + id,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          "Bearer " + adminToken
+      }
+    }
+  );
+
+  loadUsers();
+
+}
+
+/* =========================
+   EXTEND USER
+========================= */
+
+async function extendUser(id) {
+
+  await fetch(
+    API_URL + "/admin/extend/" + id,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          "Bearer " + adminToken
+      }
+    }
+  );
+
+  loadUsers();
+
+}
+
+/* =========================
+   DELETE USER
+========================= */
+
+async function deleteUser(id) {
+
+  if (!confirm(
+    "Delete this user permanently?"
+  )) return;
+
+  await fetch(
+    API_URL + "/admin/delete/" + id,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization:
+          "Bearer " + adminToken
+      }
+    }
+  );
+
+  loadUsers();
+
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+function logout() {
+
+  localStorage.removeItem(
+    "adminToken"
+  );
+
+  window.location.href =
+    "admin-login.html";
+
+}
+
+/* =========================
+   INIT
+========================= */
+
+loadUsers();
+
+</script>
+
+</body>
+</html>
