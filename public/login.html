@@ -104,7 +104,7 @@ form.addEventListener(
 
     try {
 
-      const res = await fetch(
+      const res = await(
         api(API_URL + "/login"),
         {
           method: "POST",
@@ -152,11 +152,11 @@ form.addEventListener(
       /* CHECK EXPIRY */
 
       if (
-        data.expires
+        data.subscription_expires
       ) {
 
         const expiry =
-          new Date(data.expires);
+          new Date(data.subscription_expires);
 
         const now =
           new Date();
