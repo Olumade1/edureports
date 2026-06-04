@@ -91,7 +91,7 @@ if (localStorage.getItem("darkMode") === "true") {
 async function checkSubscription() {
 
   const res = await api(
-    "API_URL/me"
+    API_URL+ "/me"
   );
 
   const data = await res.json();
@@ -148,7 +148,7 @@ async function verify() {
     return;
   }
 
-  const res = await api(`API_URL/verify/${code}`);
+  const res = await api(`API_URL+ /verify/${code}`);
   const data = await res.json();
 
   if (!data) {

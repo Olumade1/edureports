@@ -190,7 +190,7 @@ if (localStorage.getItem("darkMode") === "true") {
 async function checkSubscription() {
 
   const res = await api(
-    "API_URL/me"
+    API_URL+"/me"
   );
 
   const data = await res.json();
@@ -324,7 +324,7 @@ async function uploadLogo() {
   );
 
   const res = await fetch(
-    "API_URL/upload/logo",
+    API_URL+"/upload/logo",
     {
       method: "POST",
       body: formData

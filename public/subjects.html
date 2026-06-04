@@ -202,7 +202,7 @@ async function loadSubjects() {
   try {
 
     const res = await api(
-      "API_URL/subjects"
+      API_URL+ "/subjects"
     );
 
     const data = await res.json();
@@ -277,7 +277,7 @@ form.addEventListener(
       document.getElementById("name").value;
 
     await api(
-      "API_URL/subjects",
+      API_URL+ "/subjects",
       {
         method: "POST",
 
@@ -301,7 +301,7 @@ async function deleteSubject(id) {
     return;
 
   await api(
-    `API_URL/subjects/${id}`,
+    `API_URL+ /subjects/${id}`,
     {
       method: "DELETE"
     }

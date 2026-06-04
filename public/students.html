@@ -222,7 +222,7 @@ async function loadStudents() {
       document.getElementById("search").value;
 
     const res = await api(
-      `API_URL/students?search=${search}`
+      API_URL+ '/students?search=${search}'
     );
 
     const data = await res.json();
@@ -339,7 +339,7 @@ form.addEventListener("submit", async (e) => {
       formData.append("file", file);
 
       const uploadRes = await fetch(
-        "API_URL/upload/photo",
+        API_URL+"/upload/photo",
         {
           method: "POST",
           body: formData
@@ -352,7 +352,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     const res = await api(
-      "API_URL/students",
+      API_URL+"/students",
       {
         method: "POST",
 
@@ -397,7 +397,7 @@ async function deleteStudent(id) {
   if (!confirm("Delete student?")) return;
 
   await api(
-    `API_URL/students/${id}`,
+    API_URL+ "/students/${id}",
     {
       method: "DELETE"
     }

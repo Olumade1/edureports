@@ -105,7 +105,7 @@ form.addEventListener(
     try {
 
       const res = await fetch(
-        `${API_URL}/login`,
+        api(API_URL + "/login"),
         {
           method: "POST",
 

@@ -284,7 +284,7 @@ if (!localStorage.getItem("token")) {
 async function checkSubscription() {
 
   const res = await api(
-    "API_URL/me"
+    API_URL + "/me"
   );
 
   const data = await res.json();
@@ -326,7 +326,7 @@ async function loadStudents() {
   try {
 
     const res = await api(
-      "API_URL/students"
+      API_URL + "/students",
     );
 
     const data = await res.json();
@@ -377,7 +377,7 @@ async function loadReport() {
   try {
 
     const res = await api(
-      `API_URL/report/${studentId}?term=${term}`
+      `API_URL+ /report/${studentId}?term=${term}`
     );
 
     const data = await res.json();
@@ -511,7 +511,7 @@ async function loadReport() {
 
     QRCode.toCanvas(
       qrCanvas,
-      `API_URL/verify/${data.verification_code}`
+      `API_URL+ /verify/${data.verification_code}`
     );
 
   } catch(err) {

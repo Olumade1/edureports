@@ -84,7 +84,7 @@ if (localStorage.getItem("darkMode") === "true") {
 async function generateCode() {
 
   const res = await api(
-    "API_URL/generate-license",
+    API_URL + "/generate-license",
     {
       method: "POST"
     }
