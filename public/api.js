@@ -6,9 +6,9 @@ function api(url, options = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      Authorization: token
-        ? `Bearer ${token}`
-        : "",
+      ...(token ? {
+        Authorization: `Bearer ${token}`
+      } : {}),
       ...(options.headers || {})
     }
   });
